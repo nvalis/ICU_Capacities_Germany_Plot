@@ -6,10 +6,13 @@ import glob
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
+from pathlib import Path
 
 
 data_raw = pandas.DataFrame()
-for file_path in glob.glob('./*.json'):
+input_files = glob.glob('./*.json')
+scrape_times = [datetime.strptime(Path(p).stem, '%y%m%d_%H%M%S') for p in input_files]
+for file_path in input_files:
     data_raw = data_raw.append(pandas.read_json(file_path), ignore_index=True)
 data = data_raw.copy() # keep raw data
 # convert nested description column to str to allow further processing
@@ -55,6 +58,8 @@ def subplot(ax, column):
     ax.set_ylabel('Clinics')
     ax.set_xlim(datetime(2020, 3, 17), datetime.now())
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y.%m.%d'))
+    for st in scrape_times:
+        ax.axvline(st, alpha=0.2, c='k', lw=0.5)
     ax.grid()
     ax.set_axisbelow(True)
 
