@@ -49,13 +49,19 @@ data = raw_data.copy()  # keep raw data
 data = data.drop(data[data.id == "999999"].index)
 data.faelleCovidAktuell = data.faelleCovidAktuell.fillna(value=0)
 data.faelleCovidAktuell = data.faelleCovidAktuell.astype("int")
+# newer data contains meldebereiche as list, unhashable -> cast to str for now
+if "meldebereiche" in data.columns: 
+    data.meldebereiche = data.meldebereiche.astype("str")
 
 
 data_unique = pd.DataFrame()
 for clinic in clinics:
-    data_unique = data_unique.append(
-        data[data.id == clinic].drop_duplicates(), ignore_index=True
-    )
+    try:
+        data_unique = data_unique.append(
+            data[data.id == clinic].drop_duplicates(), ignore_index=True
+        )
+    except TypeError:
+        print(data[data.id == clinic])
 data_unique = data_unique.sort_values("meldezeitpunkt")
 print(f"{len(data_unique)} unique reports")
 
